@@ -1,0 +1,258 @@
+<!--ARLYN HARRIS FINAL PORGRAMMING PROJECT FOR MARMELSTEIN CPSC 337, WOOHOO done. Hope you like my design professor :)-->
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+
+    <title>CPSC 337 FINAL</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+
+    <style>
+
+        #cityName
+        {
+            color:#FFA500;
+        }
+
+        body {
+            background-color:#8B4513;
+            color: white;
+            font-size: x-large;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-ser
+        }
+
+        .center {
+            margin-left: auto;
+            margin-right: auto;
+            width:100%
+        }
+
+        .errorMessage {
+            color: black;
+            font-size: xx-large
+        }
+
+        h1, h2 {
+            text-decoration: overline;
+            color:#FFA500;
+            text-align: center;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .imageHeading {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .mybutton {
+            padding: 10px 24px;
+            border-radius: 8px;
+            background-color: brown;
+            color: white;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+        table, th, td {
+            border: 5px solid white;
+        }
+        td
+        {
+            color: #FFA500;
+            text-align: left;
+        }
+        ul>li{
+            list-style-position:inside;
+            text-align: left;
+        }
+        .visible
+        {
+            visibility: visible;
+        }
+        .hide
+        {
+            visibility: hidden; /*this elements is responsible for hiding things below*/
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="row">
+        <div class="col imageHeading">
+            <h1>Web Service</h1>
+            <h2>Weather</h2>
+            <p class="imageHeading">
+                Using OpenWeather Map API this website will give you current weather information based on the zip code you enter in the textbox below. <br />
+                The default location is the U.S., so all zip codes must be valid U.S. zip codes.
+            </p>
+            <br />
+
+            <form id="form1">
+                <label class="imageHeading" for="zipCode">Please enter a 5-digit zip code:</label><input type="text" id="zipCode" name="zipCode" size="20" maxlength="5" required="Required">&nbsp;
+                <input type="button" name="insert" value="SUBMIT" class="mybutton" onclick="check()"/>
+            </form>
+            <br />
+            <br />
+            <label id="check" class="imageHeading errorMessage"></label>
+            <label id="cityName" class="imageHeading errorMessage"></label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col imageHeading hide" id="tableInfo">
+           <table class="center imageHeading">
+               <th colspan="7">Weather Information</th>
+               <br/>
+               <tr>
+                   <td>Coordinates</td>
+                   <td>Weather</td>
+                   <td>Temperature</td>
+                   <td>Pressure/Visibility</td>
+                   <td>Wind</td>
+               </tr>
+               <tr>
+                   <td id="long"></td>
+                   <td id="climate"></td>
+                   <td id="temp"></td>
+                   <td id="pressure"></td>
+                   <td id="speed"></td>
+               </tr>
+               <tr>
+                   <td id="lat"></td>
+                   <td id="description"></td>
+                   <td id="minTemp" ></td>
+                   <td id="humidity"></td>
+                   <td id="direction"></td>
+               </tr>
+               <tr>
+                   <td></td>
+                   <td></td>
+                   <td id="maxTemp"></td>
+                   <td></td>
+                   <td></td>
+               </tr>
+           </table>
+        </div>
+    </div>
+    <div class="row">
+        <br/>
+        <p id="mapInfo" class="imageHeading hide">The map below displays a 600 meter radius from the Longititude and Latititude gathered from the weather API. This information comes from the zip code you entered in the textbox above.</p>
+        <br/>
+        <div class="col imageHeading" id="google"  style="height: 550px; width: 100%;"></div>
+    </div>
+
+
+    <script>
+        //String of my api and the key
+        var weatherUrl = "http://api.openweathermap.org/data/2.5/weather?q=";
+        var myAPI = ",us&appid=723b7b67675929ec979249eb5d90d3f3&units=imperial";
+        var error = document.getElementById("check");
+        var long; var lat;
+
+        //This will verify the zipcode from the user
+        function check()
+        {
+            //Use the value to get the inside of the id item
+            var zipcode = document.getElementById("zipCode").value;
+
+            //We are going to test our value - Validation
+            const zipPattern = /^\d{5}$/;
+            if (zipPattern.test(zipcode) == true)
+            {
+                getInfo(zipcode);
+            }
+            else if (zipPattern.test(zipcode) == false)
+            {
+               
+                error.innerHTML = "Please Enter A Valid 5-Digit Zip Code!";
+            }
+        }
+
+        //This will proceed to get information from the zipcode entered by the user
+        function getInfo(x)
+        {
+            var city = document.getElementById("cityName");
+            
+            //Created the string with the user information
+            var urlString = weatherUrl+x+myAPI;
+            console.log("Fetching data from Weather");
+
+            //Using the fetch method to get the information
+            fetch(urlString)
+            .then( response => response.json()) //Here we say how to intepret that data, since it is xml we do response.text()
+            .then( weatherInfo =>
+                {
+                    if(weatherInfo.cod == 404)
+                    {
+                        error.innerHTML="Zip Code You Entered Does Not Exist"
+                        city.innerHTML="";
+                        var table = document.getElementById("tableInfo"); table.classList.add("hide");
+                        var table = document.getElementById("mapInfo"); table.classList.add("hide"); 
+                        document.getElementById("google").classList.add("hide");
+                    }
+                    else
+                    {
+                        error.innerHTML="";
+                        //Make the table visible to the user and fill it in with inforamtion
+                        var table = document.getElementById("tableInfo"); table.classList.remove("hide");
+                        var table = document.getElementById("mapInfo"); table.classList.remove("hide");
+                        document.getElementById("google").classList.remove("hide"); 
+
+                        console.log(weatherInfo);
+                        city.innerHTML = weatherInfo.name;
+
+                        //Parse the values in case they are strings 
+                        lat = parseFloat(weatherInfo.coord.lat);
+                        long = parseFloat(weatherInfo.coord.lon);
+
+                        //Get all the information 
+                        document.getElementById("long").innerHTML = "Longititude: "+ weatherInfo.coord.lon+"&#176;";
+                        document.getElementById("lat").innerHTML = "Latititude: "+ weatherInfo.coord.lat+"&#176;";
+
+                        document.getElementById("climate").innerHTML = "Climate: "+ weatherInfo.weather[0].main;
+                        document.getElementById("description").innerHTML = "Description: "+ weatherInfo.weather[0].description;
+
+                        document.getElementById("temp").innerHTML = "Temperature: "+ weatherInfo.main.temp+"&#8457";
+                        document.getElementById("minTemp").innerHTML = "Minimum Temperature: "+ weatherInfo.main.temp_min+"&#8457";
+                        document.getElementById("maxTemp").innerHTML = "Maximum Temperature: "+ weatherInfo.main.temp_max+"&#8457";
+
+                        document.getElementById("pressure").innerHTML = "Pressure: "+ weatherInfo.main.pressure;
+                        document.getElementById("humidity").innerHTML = "Humidity: "+ weatherInfo.main.humidity+"%";
+
+                        document.getElementById("speed").innerHTML = "Speed: "+ weatherInfo.wind.speed;
+                        document.getElementById("direction").innerHTML = "Direction: "+ weatherInfo.wind.deg;
+
+                        //Google Maps based off of the coordinates
+                        const arlyn = { lat: lat, lng: long};
+
+                        //Center the map at me
+                        const arlynMap = new google.maps.Map(document.getElementById("google"), { zoom: 15, center: arlyn,});
+
+                        //Make circle markers based off of the zipcode
+                        const zipCircle = new google.maps.Circle
+                        (
+                            {
+                                strokeColor: "#FF0000",
+                                strokeOpacity: 0.8,
+                                strokeWeight: 2,
+                                fillColor: "#FF0000",
+                                fillOpacity: 0.35,
+                                map: arlynMap,
+                                center: arlyn,
+                                radius: 800,
+                            }
+                        )
+                    }
+                }
+            );
+        }
+
+    </script>
+
+    <script 
+     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCvXB9uKBAhaYdAthe-rVIjLCbU3Zm2U1w&libraries=&v=weekly" 
+     defer>
+    </script>
+</body>
+</html>
