@@ -1,0 +1,1 @@
+Make sure Solution Platforms is set to x86 before running SolitaireView_IntegrationTest.
