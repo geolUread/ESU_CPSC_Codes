@@ -1,0 +1,15 @@
+﻿Title: Blueberry Car Dealership -- Sales Person
+Authors: Arlyn & Adam
+Date: Febraury 1. 2021
+
+Last Updated: February 1. 2021
+
+Purpose:
+A database program project. Build a car dealership interface for sales person and customer.
+
+
+
+Personal Note:
+Adam, 
+I got the image icons from here -->			https://logomakr.com/9cbIJE
+I also compressed the image to save on space -->		https://imagecompressor.com/
